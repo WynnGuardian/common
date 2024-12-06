@@ -6,14 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+
+	"github.com/wynnguardian/common/response"
 )
 
 type UowInterface interface {
 	Register(string, RepositoryFactory)
 	GetRepository(context.Context, string) (interface{}, error)
-	Do(context.Context, func(uow *Uow) error) error
-	CommitOrRollback(error) error
-	Rollback(error) error
+	Do(context.Context, func(uow *Uow) response.WGResponse) response.WGResponse
+	CommitOrRollback(response.WGResponse) response.WGResponse
+	Rollback(response.WGResponse) response.WGResponse
 	UnRegister(string)
 }
 
@@ -56,47 +58,47 @@ func (u *Uow) GetRepository(ctx context.Context, name string) (interface{}, erro
 	return repo, nil
 }
 
-func (u *Uow) Do(ctx context.Context, fn func(uow *Uow) error) error {
+func (u *Uow) Do(ctx context.Context, fn func(uow *Uow) response.WGResponse) response.WGResponse {
 	u.mu.Lock()
 	if u.Tx != nil {
-		return errors.New("transaction already started")
+		return response.ErrInternalServerErr(errors.New("transaction already started"))
 	}
 	tx, err := u.Db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return response.ErrInternalServerErr(err)
 	}
 	u.Tx = tx
 	res := fn(u)
-	if res != nil {
+	if !res.Ok() {
 		return u.Rollback(res)
 	}
 	return u.CommitOrRollback(res)
 }
 
-func (u *Uow) CommitOrRollback(res error) error {
+func (u *Uow) CommitOrRollback(res response.WGResponse) response.WGResponse {
 	err := u.Tx.Commit()
 	if err != nil {
-		if resp := u.Rollback(err); resp != nil {
+		if resp := u.Rollback(response.ErrInternalServerErr(err)); !resp.Ok() {
 			u.mu.Unlock()
-			return fmt.Errorf("commit error: %s, rollback error: %s", err, resp.Error())
+			return response.ErrInternalServerErr(fmt.Errorf("commit error: %s, rollback error: %s", err, resp.Message))
 		}
 		u.mu.Unlock()
-		return (err)
+		return response.ErrInternalServerErr(err)
 	}
 	u.Tx = nil
 	u.mu.Unlock()
 	return res
 }
 
-func (u *Uow) Rollback(res error) error {
+func (u *Uow) Rollback(res response.WGResponse) response.WGResponse {
 	if u.Tx == nil {
 		u.mu.Unlock()
-		return errors.New("no transaction to rollback")
+		return response.ErrInternalServerErr(errors.New("no transaction to rollback"))
 	}
 	err := u.Tx.Rollback()
 	if err != nil {
 		u.mu.Unlock()
-		return err
+		return response.ErrInternalServerErr(err)
 	}
 	u.Tx = nil
 	u.mu.Unlock()
