@@ -34,4 +34,5 @@ type Operation struct {
 	StartedAt   time.Time `json:"started_at"`
 	LastUpdate  time.Time `json:"last_update"`
 	ErrorStack  []OpError `json:"error_stack"`
+	Path        []string  `json:"path"`
 }

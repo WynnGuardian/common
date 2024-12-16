@@ -4,8 +4,17 @@ import (
 	"database/sql"
 	"strings"
 
+	gonanoid "github.com/matoous/go-nanoid"
 	"github.com/wynnguardian/common/response"
 )
+
+func GenSurveyId() string {
+	return MustVal(gonanoid.Generate("ABCDEF0123456789", 10))
+}
+
+func GenAuthId() string {
+	return MustVal(gonanoid.Generate("012345678", 10))
+}
 
 type Pair[T any, U any] struct {
 	First  T
