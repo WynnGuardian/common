@@ -17,7 +17,7 @@ func GenAuthId() string {
 }
 
 func GenVoteToken() string {
-	return MustVal(gonanoid.Generate("abcdefghijklmnopqrstuvwxyz012345678", 24))
+	return MustVal(gonanoid.Generate("ABCDEFGHIJKLMNOPQRSTUVWXYZ012345678", 24))
 }
 
 type Pair[T any, U any] struct {
