@@ -10,8 +10,15 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func RateLimit(rl *RateLimiter, next handlerfunc.HandlerFunc) handlerfunc.HandlerFunc {
+func RateLimit(rl *RateLimiter, whitelist []string, next handlerfunc.HandlerFunc) handlerfunc.HandlerFunc {
 	return func(ctx *gin.Context) response.WGResponse {
+
+		for _, w := range whitelist {
+			if w == ctx.GetHeader("Authorization") {
+				return next(ctx)
+			}
+		}
+
 		clientIP := ctx.ClientIP()
 
 		limiter := rl.GetLimiter(clientIP)
