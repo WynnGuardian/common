@@ -16,6 +16,10 @@ var (
 		Status:  http.StatusNotFound,
 		Message: "invalid item.",
 	}
+	ErrTooManyRequests = WGResponse{
+		Status:  http.StatusTooManyRequests,
+		Message: "Too many requests. Try again later.",
+	}
 	ErrSurveyNotOpen = WGResponse{
 		Status:  http.StatusForbidden,
 		Message: "survey not open.",
