@@ -13,7 +13,7 @@ func GenSurveyId() string {
 }
 
 func GenAuthId() string {
-	return MustVal(gonanoid.Generate("012345678", 10))
+	return MustVal(gonanoid.Generate("0123456789", 10))
 }
 
 func GenVoteToken() string {
