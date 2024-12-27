@@ -18,7 +18,6 @@ type SurveyVote struct {
 }
 
 type SurveyVoteEntry struct {
-	Survey *Survey `json:"survey_id"`
 	UserID string  `json:"user_dc_id"`
 	Stat   string  `json:"stat"`
 	Value  float64 `json:"value"`
