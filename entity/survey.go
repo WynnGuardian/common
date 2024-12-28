@@ -17,8 +17,7 @@ type Survey struct {
 }
 
 type SurveyResult struct {
-	SurveyID   string             `json:"survey_id"`
-	ItemName   string             `json:"item_name"`
+	Survey     *Survey            `json:"survey"`
 	TotalVotes int                `json:"total_votes"`
 	Results    map[string]float64 `json:"results"`
 }
